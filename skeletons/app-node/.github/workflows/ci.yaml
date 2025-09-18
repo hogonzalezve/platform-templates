@@ -1,0 +1,33 @@
+name: build-and-release
+on:
+  push: { branches: [ main ] }
+permissions:
+  id-token: write
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      ECR_REPOSITORY: {{serviceName}}
+      K8S_CONFIG_REPO: <ORG>/ms-{{serviceName}}-k8s
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+      - name: Update K8s manifests with new image tag
+        run: |
+          git clone https://github.com/${{ env.K8S_CONFIG_REPO }} /tmp/k8s
+          sed -i "s#image: .*#image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${GITHUB_SHA}#g" /tmp/k8s/deployment.yaml || true
+          cd /tmp/k8s
+          git config user.email "bot@miempresa.com"
+          git config user.name "release-bot"
+          git commit -am "chore: image ${GITHUB_SHA}" || echo "no changes"
+          git push || echo "no push (no changes)"

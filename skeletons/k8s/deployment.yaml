@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{serviceName}}
+  namespace: {{namespace}}
+  labels: { app: {{serviceName}} }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: {{serviceName}} } }
+  template:
+    metadata: { labels: { app: {{serviceName}} } }
+    spec:
+      containers:
+        - name: app
+          image: CHANGEME/{{serviceName}}:latest  # será reemplazada por CI
+          ports: [{ containerPort: 8080 }]
+          env:
+            - name: DB_HOST
+              valueFrom: { secretKeyRef: { name: {{serviceName}}-db-conn, key: endpoint } }
+            - name: DB_PORT
+              valueFrom: { secretKeyRef: { name: {{serviceName}}-db-conn, key: port } }
+            - name: DB_USER
+              valueFrom: { secretKeyRef: { name: {{serviceName}}-db-conn, key: username } }
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: {{serviceName}}-db-conn, key: password } }
+            - name: DB_NAME
+              valueFrom: { secretKeyRef: { name: {{serviceName}}-db-conn, key: database } }

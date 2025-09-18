@@ -1,0 +1,15 @@
+apiVersion: database.platform.mycorp/v1alpha1
+kind: PostgreSQLInstance
+metadata:
+  name: {{serviceName}}-db
+  namespace: {{namespace}}
+spec:
+  compositionRef:
+    name: xpostgresqlinstances.aws.database.platform.mycorp
+  parameters:
+    version: "{{dbVersion}}"
+    storageGi: {{dbStorageGi}}
+    instanceClass: "{{dbInstance}}"
+  writeConnectionSecretToRef:
+    name: {{serviceName}}-db-conn
+    namespace: {{namespace}}
