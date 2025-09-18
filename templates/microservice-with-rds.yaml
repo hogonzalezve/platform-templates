@@ -39,7 +39,7 @@ spec:
       action: github:repo:create
       input:
         repoUrl: github.com?owner=<ORG>&repo=ms-${{ parameters.serviceName }}-app
-        visibility: private
+        repoVisibility: private
 
     - id: create-k8s
       name: Crear repo de k8s
@@ -47,7 +47,7 @@ spec:
       action: github:repo:create
       input:
         repoUrl: github.com?owner=<ORG>&repo=ms-${{ parameters.serviceName }}-k8s
-        visibility: private
+        repoVisibility: private
 
     # B) Sembrar APP (copia el skeleton app-node a un directorio temporal)
     - id: seed-app
