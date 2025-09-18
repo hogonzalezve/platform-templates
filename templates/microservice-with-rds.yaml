@@ -10,11 +10,12 @@ spec:
   type: service
   parameters:
     - title: Datos del servicio
-      required: [serviceName, namespace, domain]
+      required: [serviceName, namespace, domain, org]
       properties:
         serviceName: { type: string, pattern: "^[a-z0-9-]+$", description: "nombre corto: p.ej. orders" }
         namespace:   { type: string, pattern: "^[a-z0-9-]+$", description: "namespace K8s: p.ej. team-a" }
         domain:      { type: string, description: "FQDN: p.ej. orders.nttdataco.com" }
+        org:         { type: string, description: "Organización o usuario GitHub (ej: mi-org)" }
         useExistingRepos: { type: boolean, default: true, description: "Si ya creaste repos a mano, marca true" }
     - title: Repositorios
       properties:
@@ -38,7 +39,7 @@ spec:
       if: ${{ parameters.useExistingRepos == false }}
       action: github:repo:create
       input:
-        repoUrl: github.com?owner=<ORG>&repo=ms-${{ parameters.serviceName }}-app
+        repoUrl: github.com?owner=${{ parameters.org }}&repo=ms-${{ parameters.serviceName }}-app
         repoVisibility: private
 
     - id: create-k8s
@@ -46,7 +47,7 @@ spec:
       if: ${{ parameters.useExistingRepos == false }}
       action: github:repo:create
       input:
-        repoUrl: github.com?owner=<ORG>&repo=ms-${{ parameters.serviceName }}-k8s
+        repoUrl: github.com?owner=${{ parameters.org }}&repo=ms-${{ parameters.serviceName }}-k8s
         repoVisibility: private
 
     # B) Sembrar APP (copia el skeleton app-node a un directorio temporal)
@@ -67,7 +68,7 @@ spec:
         repoUrl: >-
           ${{ parameters.useExistingRepos
               ? parameters.appRepoUrl
-              : 'github.com?owner=<ORG>&repo=ms-' + parameters.serviceName + '-app' }}
+              : 'github.com?owner=${{ parameters.org }}&repo=ms-' + parameters.serviceName + '-app' }}
         defaultBranch: main
         sourcePath: ./work/app
         commitMessage: "chore(scaffold): seed app"
@@ -93,7 +94,7 @@ spec:
         repoUrl: >-
           ${{ parameters.useExistingRepos
               ? parameters.k8sRepoUrl
-              : 'github.com?owner=<ORG>&repo=ms-' + parameters.serviceName + '-k8s' }}
+              : 'github.com?owner=${{ parameters.org }}&repo=ms-' + parameters.serviceName + '-k8s' }}
         defaultBranch: main
         sourcePath: ./work/k8s
         commitMessage: "chore(scaffold): seed k8s"
