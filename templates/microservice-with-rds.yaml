@@ -61,14 +61,24 @@ spec:
           serviceName: ${{ parameters.serviceName }}
 
     # C) Publicar APP en el repo (existente o recién creado)
+    # - id: publish-app
+    #   name: Publicar APP en repo
+    #   action: publish:github
+    #   input:
+    #     repoUrl: >-
+    #       ${{ parameters.useExistingRepos
+    #           ? parameters.appRepoUrl
+    #           : 'github.com?owner=${{ parameters.org }}&repo=ms-' + parameters.serviceName + '-app' }}
+    #     defaultBranch: main
+    #     sourcePath: ./work/app
     - id: publish-app
       name: Publicar APP en repo
       action: publish:github
       input:
-        repoUrl: >-
-          ${{ parameters.useExistingRepos
-              ? parameters.appRepoUrl
-              : 'github.com?owner=${{ parameters.org }}&repo=ms-' + parameters.serviceName + '-app' }}
+        repoUrl: ${{ parameters.useExistingRepos
+          ? parameters.appRepoUrl
+          : ('github.com?owner=' ~ parameters.org ~ '&repo=ms-' ~ parameters.serviceName ~ '-app') }}
+        repoVisibility: private
         defaultBranch: main
         sourcePath: ./work/app
 
@@ -86,16 +96,25 @@ spec:
           pvcSizeGi:   ${{ parameters.pvcSizeGi }}
 
     # E) Publicar K8s en su repo
-    - id: publish-k8s
-      name: Publicar k8s en repo
-      action: publish:github
-      input:
-        repoUrl: >-
-          ${{ parameters.useExistingRepos
-              ? parameters.k8sRepoUrl
-              : 'github.com?owner=${{ parameters.org }}&repo=ms-' + parameters.serviceName + '-k8s' }}
-        defaultBranch: main
-        sourcePath: ./work/k8s
+    # - id: publish-k8s
+    #   name: Publicar k8s en repo
+    #   action: publish:github
+    #   input:
+    #     repoUrl: >-
+    #       ${{ parameters.useExistingRepos
+    #           ? parameters.k8sRepoUrl
+    #           : 'github.com?owner=${{ parameters.org }}&repo=ms-' + parameters.serviceName + '-k8s' }}
+    #     defaultBranch: main
+    #     sourcePath: ./work/k8s
+      - id: publish-k8s
+        name: Publicar k8s en repo
+        action: publish:github
+        input:
+          repoUrl: ${{ parameters.useExistingRepos
+            ? parameters.appRepoUrl
+            : ('github.com?owner=' ~ parameters.org ~ '&repo=ms-' ~ parameters.serviceName ~ '-k8s') }}
+          defaultBranch: main
+          sourcePath: ./work/k8s
 
     # F) Generar Claim de DB (Crossplane)
     - id: seed-claim
