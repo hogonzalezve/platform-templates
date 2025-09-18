@@ -1,0 +1,9 @@
+# platform-templates/catalog-info.yaml
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: platform-templates
+  description: Colección de plantillas (Scaffolder)
+spec:
+  targets:
+    - ./templates/microservice-with-rds.yaml
