@@ -71,7 +71,6 @@ spec:
               : 'github.com?owner=${{ parameters.org }}&repo=ms-' + parameters.serviceName + '-app' }}
         defaultBranch: main
         sourcePath: ./work/app
-        commitMessage: "chore(scaffold): seed app"
 
     # D) Sembrar K8s (ns, pvc, deployment, service, ingress)
     - id: seed-k8s
@@ -97,7 +96,6 @@ spec:
               : 'github.com?owner=${{ parameters.org }}&repo=ms-' + parameters.serviceName + '-k8s' }}
         defaultBranch: main
         sourcePath: ./work/k8s
-        commitMessage: "chore(scaffold): seed k8s"
 
     # F) Generar Claim de DB (Crossplane)
     - id: seed-claim
