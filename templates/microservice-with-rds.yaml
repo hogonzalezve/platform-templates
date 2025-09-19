@@ -65,9 +65,11 @@ spec:
       name: Publicar APP en repo
       action: publish:github
       input:
-        repoUrl: github.com?owner=${{ parameters.org }}&repo=ms-${{ parameters.serviceName }}-app
+        repoUrl: ${{ parameters.useExistingRepos and parameters.appRepoUrl or 'github.com?owner=' + parameters.org + '&repo=ms-' + parameters.serviceName + '-app' }}
         defaultBranch: main
         sourcePath: ./work/app
+        gitCommitterName: Backstage Scaffolder
+        gitCommitterEmail: scaffolder@backstage.io
 
     # D) Sembrar K8s (ns, pvc, deployment, service, ingress)
     - id: seed-k8s
