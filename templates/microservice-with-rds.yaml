@@ -68,7 +68,6 @@ spec:
         repoUrl: github.com?owner=${{ parameters.org }}&repo=ms-${{ parameters.serviceName }}-app
         defaultBranch: main
         sourcePath: ./work/app
-        allowedHosts: ['github.com']
 
     # D) Sembrar K8s (ns, pvc, deployment, service, ingress)
     - id: seed-k8s
@@ -91,7 +90,6 @@ spec:
         repoUrl: github.com?owner=${{ parameters.org }}&repo=ms-${{ parameters.serviceName }}-k8s
         defaultBranch: main
         sourcePath: ./work/k8s
-        allowedHosts: ['github.com']
 
     # F) Generar Claim de DB (Crossplane)
     - id: seed-claim
