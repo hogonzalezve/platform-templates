@@ -77,6 +77,7 @@ spec:
         repoUrl: github.com?owner=${{ parameters.org }}&repo=ms-${{ parameters.serviceName }}-app
         defaultBranch: main
         sourcePath: ./work/app
+        force: true
 
     # D) Generar K8s (ns, pvc, deployment, service, ingress)
     - id: seed-k8s
@@ -99,6 +100,7 @@ spec:
         repoUrl: github.com?owner=${{ parameters.org }}&repo=ms-${{ parameters.serviceName }}-k8s
         defaultBranch: main
         sourcePath: ./work/k8s
+        force: true
 
     # F) Generar Claim de DB (Crossplane)
     - id: seed-claim
@@ -124,6 +126,7 @@ spec:
         defaultBranch: main
         sourcePath: ./work/claim
         targetPath: databases/${{ parameters.serviceName }}
+        force: true
 
   output:
     links:
