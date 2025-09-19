@@ -90,11 +90,11 @@ spec:
       name: Publicar k8s en repo
       action: publish:github
       input:
-         repoUrl: ${{ parameters.useExistingRepos
-           ? parameters.appRepoUrl
-           : ('github.com?owner=' ~ parameters.org ~ '&repo=ms-' ~ parameters.serviceName ~ '-k8s') }}
-         defaultBranch: main
-         sourcePath: ./work/k8s
+        repoUrl: ${{ parameters.useExistingRepos
+          ? parameters.k8sRepoUrl
+          : ('github.com?owner=' ~ parameters.org ~ '&repo=ms-' ~ parameters.serviceName ~ '-k8s') }}
+        defaultBranch: main
+        sourcePath: ./work/k8s
 
     # F) Generar Claim de DB (Crossplane)
     - id: seed-claim
