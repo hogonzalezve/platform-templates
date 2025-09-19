@@ -1,0 +1,44 @@
+apiVersion: platform.example.io/v1alpha1
+kind: AppStack
+metadata:
+  name: ${{ parameters.appName }}
+  namespace: kratix-system
+spec:
+  appName: ${{ parameters.appName }}
+  namespace: ${{ parameters.namespace }}
+  image: ${{ parameters.image }}
+  imagePullPolicy: IfNotPresent
+  replicas: ${{ parameters.replicas }}
+  port: ${{ parameters.port }}
+  env:
+    - name: ENV
+      value: ${{ parameters.env }}
+  resources:
+    requests:
+      cpu: ${{ parameters.cpuRequest }}
+      memory: ${{ parameters.memRequest }}
+    limits:
+      cpu: ${{ parameters.cpuLimit }}
+      memory: ${{ parameters.memLimit }}
+  serviceType: ClusterIP
+  gateway:
+    hostname: ${{ parameters.hostname }}
+    gatewayName: ${{ parameters.gatewayName }}
+    gatewayNamespace: ${{ parameters.gatewayNamespace }}
+  pvc:
+    storageClassName: ${{ parameters.storageClass }}
+    size: ${{ parameters.pvcSize }}
+    mountPath: ${{ parameters.mountPath }}
+  database:
+    enabled: ${{ parameters.db.enabled }}
+    claimApiVersion: ${{ parameters.db.claimApiVersion }}
+    claimKind: ${{ parameters.db.claimKind }}
+    claimName: ${{ parameters.db.claimName }}
+    parameters:
+      engine: ${{ parameters.db.engine }}
+      version: ${{ parameters.db.version }}
+      instanceSize: ${{ parameters.db.instanceSize }}
+      storageGB: ${{ parameters.db.storageGB }}
+      dbName: ${{ parameters.db.dbName }}
+      username: ${{ parameters.db.username }}
+      publiclyAccessible: ${{ parameters.db.publiclyAccessible }}
