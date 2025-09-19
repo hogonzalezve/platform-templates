@@ -65,7 +65,8 @@ spec:
       name: Publicar APP en repo
       action: publish:github
       input:
-        repoUrl: ${{ parameters.useExistingRepos ? parameters.appRepoUrl : steps['create-app'].input.repoUrl }}
+        repoUrl: >
+          ${{ parameters.useExistingRepos ? parameters.appRepoUrl : steps['create-app'].input.repoUrl }}
         defaultBranch: main
         sourcePath: ./work/app
 
@@ -87,7 +88,8 @@ spec:
       name: Publicar k8s en repo
       action: publish:github
       input:
-        repoUrl: ${{ parameters.useExistingRepos ? parameters.k8sRepoUrl : steps['create-k8s'].input.repoUrl }}
+        repoUrl: >
+          ${{ parameters.useExistingRepos ? parameters.k8sRepoUrl : steps['create-k8s'].input.repoUrl }}
         defaultBranch: main
         sourcePath: ./work/k8s
 
