@@ -16,7 +16,6 @@ spec:
         namespace:   { type: string, pattern: "^[a-z0-9-]+$", description: "namespace K8s: p.ej. team-a" }
         domain:      { type: string, description: "FQDN: p.ej. orders.nttdataco.com" }
         org:         { type: string, description: "Organización o usuario GitHub (ej: mi-org)" }
-        team:        { type: string, description: "Nombre del equipo o squad (ej: team-a)" }
         useExistingRepo: { type: boolean, default: true, description: "Si ya creaste el repo a mano, marca true" }
     - title: Repositorio
       properties:
