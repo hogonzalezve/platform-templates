@@ -68,7 +68,6 @@ spec:
         repoUrl: ${{ parameters.useExistingRepos
           ? parameters.appRepoUrl
           : ('github.com?owner=' ~ parameters.org ~ '&repo=ms-' ~ parameters.serviceName ~ '-app') }}
-        repoVisibility: private
         defaultBranch: main
         sourcePath: ./work/app
 
