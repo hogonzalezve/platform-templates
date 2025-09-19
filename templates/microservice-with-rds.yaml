@@ -64,10 +64,10 @@ spec:
 
     # B) Generar APP (copia el skeleton app-node a un directorio temporal)
     - id: seed-app
-      name: Sembrar app (Dockerfile + CI)
+      name: Crear app (Dockerfile + CI)
       action: fetch:template
       input:
-        url: ./skeletons/app-node
+        url: ../skeletons/app-node
         targetPath: ./work/app
         values:
           serviceName: ${{ parameters.serviceName }}
@@ -86,10 +86,10 @@ spec:
 
     # D) Generar K8s (ns, pvc, deployment, service, ingress)
     - id: seed-k8s
-      name: Sembrar k8s
+      name: Crear k8s
       action: fetch:template
       input:
-        url: ./skeletons/k8s
+        url: ../skeletons/k8s
         targetPath: ./work/k8s
         values:
           serviceName: ${{ parameters.serviceName }}
@@ -114,7 +114,7 @@ spec:
       name: Generar claim DB (Crossplane)
       action: fetch:template
       input:
-        url: ./skeletons/claim-db
+        url: ../skeletons/claim-db
         targetPath: ./work/claim
         values:
           serviceName: ${{ parameters.serviceName }}
@@ -132,7 +132,7 @@ spec:
         repoUrl: github.com?owner=${{ parameters.org }}&repo=tenant-${{ parameters.namespace }}-claims
         defaultBranch: main
         sourcePath: ./work/claim
-        targetPath: databases/${{ parameters.serviceName }}
+        # targetPath: databases/${{ parameters.serviceName }}
         gitCommitMessage: "Database claim for ${{ parameters.serviceName }} - ${{ '' | now }}"
         gitAuthorName: "Backstage Scaffolder"
         gitAuthorEmail: "scaffolder@backstage.io"
