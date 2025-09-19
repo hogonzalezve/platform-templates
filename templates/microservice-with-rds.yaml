@@ -87,9 +87,9 @@ spec:
 
     # E) Publicar K8s en su repo
     - id: publish-k8s
-       name: Publicar k8s en repo
-       action: publish:github
-       input:
+      name: Publicar k8s en repo
+      action: publish:github
+      input:
          repoUrl: ${{ parameters.useExistingRepos
            ? parameters.appRepoUrl
            : ('github.com?owner=' ~ parameters.org ~ '&repo=ms-' ~ parameters.serviceName ~ '-k8s') }}
