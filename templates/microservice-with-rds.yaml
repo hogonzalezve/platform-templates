@@ -65,9 +65,7 @@ spec:
       name: Publicar APP en repo
       action: publish:github
       input:
-        repoUrl: ${{ parameters.useExistingRepos
-          ? parameters.appRepoUrl
-          : ('github.com?owner=' ~ parameters.org ~ '&repo=ms-' ~ parameters.serviceName ~ '-app') }}
+        repoUrl: ${{ parameters.useExistingRepos and parameters.appRepoUrl or 'github.com?owner=' + parameters.org + '&repo=ms-' + parameters.serviceName + '-app' }}
         defaultBranch: main
         sourcePath: ./work/app
 
