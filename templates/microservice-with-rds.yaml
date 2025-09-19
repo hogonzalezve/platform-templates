@@ -2,8 +2,8 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: microservice-with-rds
-  title: Microservice + AWS RDS
+  name: microservice-with-rds-v2
+  title: Microservice + AWS RDS (Fixed)
   description: Crea o reutiliza un micro con DB en AWS (Crossplane), K8s manifests y CI.
 spec:
   owner: group:platform-team
@@ -16,6 +16,7 @@ spec:
         namespace:   { type: string, pattern: "^[a-z0-9-]+$", description: "namespace K8s: p.ej. team-a" }
         domain:      { type: string, description: "FQDN: p.ej. orders.nttdataco.com" }
         org:         { type: string, description: "Organización o usuario GitHub (ej: mi-org)" }
+        team:        { type: string, description: "Nombre del equipo o squad (ej: team-a)" }
         useExistingRepos: { type: boolean, default: true, description: "Si ya creaste repos a mano, marca true" }
     - title: Repositorios
       properties:
@@ -50,12 +51,20 @@ spec:
         repoUrl: github.com?owner=${{ parameters.org }}&repo=ms-${{ parameters.serviceName }}-k8s
         repoVisibility: private
 
-    # B) Sembrar APP (copia el skeleton app-node a un directorio temporal)
+    - id: create-claims
+      name: Crear repo de claims
+      if: ${{ parameters.useExistingRepos == false }}
+      action: github:repo:create
+      input:
+        repoUrl: github.com?owner=${{ parameters.org }}&repo=tenant-${{ parameters.namespace }}-claims
+        repoVisibility: private
+
+    # B) Generar APP (copia el skeleton app-node a un directorio temporal)
     - id: seed-app
       name: Sembrar app (Dockerfile + CI)
       action: fetch:template
       input:
-        url: ../skeletons/app-node
+        url: ./skeletons/app-node
         targetPath: ./work/app
         values:
           serviceName: ${{ parameters.serviceName }}
@@ -69,12 +78,12 @@ spec:
         defaultBranch: main
         sourcePath: ./work/app
 
-    # D) Sembrar K8s (ns, pvc, deployment, service, ingress)
+    # D) Generar K8s (ns, pvc, deployment, service, ingress)
     - id: seed-k8s
       name: Sembrar k8s
       action: fetch:template
       input:
-        url: ../skeletons/k8s
+        url: ./skeletons/k8s
         targetPath: ./work/k8s
         values:
           serviceName: ${{ parameters.serviceName }}
@@ -96,7 +105,7 @@ spec:
       name: Generar claim DB (Crossplane)
       action: fetch:template
       input:
-        url: ../skeletons/claim-db
+        url: ./skeletons/claim-db
         targetPath: ./work/claim
         values:
           serviceName: ${{ parameters.serviceName }}
@@ -109,13 +118,12 @@ spec:
     # G) Publicar Claim en el repo de claims (equipo)
     - id: publish-claim
       name: Publicar claim en repo de equipo
-      action: publish:github
+      action: github:repo:push
       input:
-        repoUrl: ${{ parameters.claimsRepoUrl }}
+        repoUrl: github.com?owner=${{ parameters.org }}&repo=tenant-${{ parameters.namespace }}-claims
         defaultBranch: main
         sourcePath: ./work/claim
         targetPath: databases/${{ parameters.serviceName }}
-        commitMessage: "feat(db): claim para ${{ parameters.serviceName }}"
 
   output:
     links:
