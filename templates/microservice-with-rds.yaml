@@ -63,7 +63,7 @@ spec:
     # C) Publicar APP en el repo (existente o recién creado)
     - id: publish-app
       name: Publicar APP en repo
-      action: publish:github
+      action: github:repo:push
       input:
         repoUrl: github.com?owner=${{ parameters.org }}&repo=ms-${{ parameters.serviceName }}-app
         defaultBranch: main
@@ -85,7 +85,7 @@ spec:
     # E) Publicar K8s en su repo
     - id: publish-k8s
       name: Publicar k8s en repo
-      action: publish:github
+      action: github:repo:push
       input:
         repoUrl: github.com?owner=${{ parameters.org }}&repo=ms-${{ parameters.serviceName }}-k8s
         defaultBranch: main
