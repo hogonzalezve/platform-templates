@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{serviceName}}-data
-  namespace: {{namespace}}
-spec:
-  accessModes: ["ReadWriteOnce"]
-  resources: { requests: { storage: {{pvcSizeGi}}Gi } }

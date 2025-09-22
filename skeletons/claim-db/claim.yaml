@@ -4,12 +4,45 @@ metadata:
   name: {{serviceName}}-db
   namespace: {{namespace}}
 spec:
+  {{#if compositionRefName}}
   compositionRef:
-    name: xpostgresqlinstances.aws.database.platform.mycorp
+    name: {{compositionRefName}}
+  {{/if}}
   parameters:
+    # --- Básicos ---
+    region: {{region}}
+    engine: postgres
     version: "{{dbVersion}}"
-    storageGi: {{dbStorageGi}}
-    instanceClass: "{{dbInstance}}"
+    instanceSize: "{{dbInstance}}"
+    storageGB: {{dbStorageGi}}
+    dbName: "{{dbName}}"
+    username: "{{dbUser}}"
+    publiclyAccessible: {{publiclyAccessible}}
+    port: {{dbPort}}
+
+    # --- Red (creación vía Composition) ---
+    vpcId: "{{vpcId}}"
+    subnetIds:
+      {{#each subnetIds}}
+      - "{{this}}"
+      {{/each}}
+    # Cualquiera de las dos (o ambas) es opcional:
+    allowedCidrs:
+      {{#each allowedCidrs}}
+      - "{{this}}"
+      {{/each}}
+    allowedSecurityGroupIds:
+      {{#each allowedSecurityGroupIds}}
+      - "{{this}}"
+      {{/each}}
+
+    # --- Operación / tags ---
+    deletionPolicy: "{{deletionPolicy}}"   # "Delete" | "Orphan"
+    tags:
+      {{#each tags}}
+      {{@key}}: "{{this}}"
+      {{/each}}
+
   writeConnectionSecretToRef:
     name: {{serviceName}}-db-conn
     namespace: {{namespace}}
