@@ -249,11 +249,10 @@ spec:
       action: publish:github
       input:
         repoUrl: github.com?repo=platform-workflow&owner=hogonzalezve
-        branch: main
+        defaultBranch: main
         gitCommitMessage: "Deploy ${{ parameters.appName }} via AppModelA"
         gitAuthorName: "Backstage Platform"
         gitAuthorEmail: "platform@company.com"
-        targetPath: kratix/requests
 
   output:
     links:
