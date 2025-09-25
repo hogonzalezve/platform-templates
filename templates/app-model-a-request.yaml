@@ -246,14 +246,20 @@ spec:
 
     - id: publish
       name: Publish to platform-workflow
-      action: publish:github
+      action: publish:github:pull-request
       input:
         repoUrl: github.com?repo=platform-workflow&owner=hogonzalezve
-        defaultBranch: main
-        allowRepoOverride: true
-        gitCommitMessage: "Deploy ${{ parameters.appName }} via AppModelA"
-        gitAuthorName: "Backstage Platform"
-        gitAuthorEmail: "platform@company.com"
+        branchName: "app-request-${{ parameters.appName }}-${{ user.entity.metadata.name | default('user') }}-${{ parameters.targetNamespace }}-${{ '' + new Date().valueOf() }}"
+        title: "Deploy ${{ parameters.appName }} via AppModelA"
+        description: |
+          ## New AppModelA Application Request
+          
+          **Application:** ${{ parameters.appName }}
+          **Namespace:** ${{ parameters.targetNamespace }}
+          **Image:** ${{ parameters.image }}
+          **Replicas:** ${{ parameters.replicas }}
+        targetPath: .
+        update: true
 
   output:
     links:
