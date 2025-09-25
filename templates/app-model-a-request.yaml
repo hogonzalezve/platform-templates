@@ -241,7 +241,7 @@ spec:
           requestNamespace: ${{ parameters.requestNamespace }}
           randomId: "${{ parameters.appName | lower | replace('-', '') | slice(0, 2) }}"
           timestamp: "generated"
-          uniqueName: "${{ parameters.appName }}-${{ parameters.appName | lower | replace('-', '') | slice(0, 2) }}"
+          uniqueName: "${{ parameters.appName }}-${{ parameters.targetNamespace | lower }}"
           uniqueFilename: "${{ parameters.appName }}-${{ user.entity.metadata.name | default('user') }}-${{ parameters.targetNamespace }}-request"
 
     - id: publish
