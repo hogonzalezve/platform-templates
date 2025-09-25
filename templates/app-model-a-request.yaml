@@ -239,9 +239,9 @@ spec:
           databaseStorageGB: ${{ parameters.databaseStorageGB }}
           databaseInstanceSize: ${{ parameters.databaseInstanceSize }}
           requestNamespace: ${{ parameters.requestNamespace }}
-          randomId: "${{ parameters.appName | lower | replace('-', '') | slice(0, 2) }}"
-          timestamp: "generated"
-          uniqueName: "${{ parameters.appName }}-${{ parameters.targetNamespace | lower }}"
+          randomId: "${{ user.entity.metadata.name | default('user') | slice(0, 3) }}"
+          timestamp: "generated"  
+          uniqueName: "${{ parameters.appName }}-${{ user.entity.metadata.name | default('user') | replace('.', '') | replace('@', '') | slice(0, 5) }}"
           uniqueFilename: "${{ parameters.appName }}-${{ user.entity.metadata.name | default('user') }}-${{ parameters.targetNamespace }}-request"
 
     - id: publish
