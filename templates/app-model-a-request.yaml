@@ -250,14 +250,17 @@ spec:
       input:
         repoUrl: github.com?repo=platform-workflow&owner=hogonzalezve
         defaultBranch: main
+        allowRepoOverride: true
         gitCommitMessage: "Deploy ${{ parameters.appName }} via AppModelA"
         gitAuthorName: "Backstage Platform"
         gitAuthorEmail: "platform@company.com"
 
   output:
     links:
-      - title: Pull Request
+      - title: Repository Commit
         url: ${{ steps.publish.output.remoteUrl }}
+      - title: Application Request File
+        url: "${{ steps.publish.output.remoteUrl }}/blob/main/kratix/requests/${{ parameters.appName }}-${{ user.entity.metadata.name | default('user') }}-${{ parameters.targetNamespace }}-request.yaml"
       - title: ArgoCD Applications
         url: https://argocd.your-domain.com/applications
       - title: Kratix Platform State
