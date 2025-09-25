@@ -242,30 +242,17 @@ spec:
           randomId: "${{ parameters.appName | lower | replace('-', '') | slice(0, 2) }}"
           timestamp: "generated"
           uniqueName: "${{ parameters.appName }}-${{ parameters.appName | lower | replace('-', '') | slice(0, 2) }}"
-          uniqueFilename: "${{ parameters.appName }}-request"
+          uniqueFilename: "${{ parameters.appName }}-${{ user.entity.metadata.name | default('user') }}-${{ parameters.targetNamespace }}-request"
 
     - id: publish
       name: Publish to platform-workflow
-      action: publish:github:pull-request
+      action: publish:github
       input:
         repoUrl: github.com?repo=platform-workflow&owner=hogonzalezve
-        branchName: "app-request-${{ parameters.appName }}-${{ parameters.appName | lower | replace('-', '') | slice(0, 2) }}"
-        title: "Deploy ${{ parameters.appName }} via AppModelA"
-        description: |
-          ## New AppModelA Application Request
-          
-          **Application:** ${{ parameters.appName }}
-          **Namespace:** ${{ parameters.targetNamespace }}
-          **Image:** ${{ parameters.image }}
-          **Replicas:** ${{ parameters.replicas }}
-          
-          ### Configuration:
-          - **Gateway:** ${{ parameters.gatewayEnabled }}
-          - **Storage:** ${{ parameters.storageEnabled }}
-          - **Database:** ${{ parameters.databaseEnabled }}
-          
-          This PR creates a new Kratix request for deploying the application.
-          Once merged, ArgoCD will process the request automatically.
+        branch: main
+        gitCommitMessage: "Deploy ${{ parameters.appName }} via AppModelA"
+        gitAuthorName: "Backstage Platform"
+        gitAuthorEmail: "platform@company.com"
         targetPath: kratix/requests
 
   output:
