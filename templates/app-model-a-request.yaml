@@ -248,8 +248,8 @@ spec:
       name: Publish to platform-workflow
       action: publish:github:pull-request
       input:
-        repoUrl: github.com/hogonzalezve/platform-workflow
-        branchName: "app-request-${{ steps['generate-random'].output.result.uniqueFilename }}"
+        repoUrl: github.com?repo=platform-workflow&owner=hogonzalezve
+        branchName: "app-request-${{ parameters.appName }}-${{ parameters.appName | lower | replace('-', '') | slice(0, 2) }}"
         title: "Deploy ${{ parameters.appName }} via AppModelA"
         description: |
           ## New AppModelA Application Request
