@@ -213,14 +213,6 @@ spec:
             - Production Environment
 
   steps:
-    - id: generate-random
-      name: Generate Unique Identifiers
-      action: roadiehq:utils:serialize:yaml
-      input:
-        data:
-          randomId: "${{ '00' | until(100) | random }}"
-          timestamp: "${{ (new Date()).toISOString().substring(0,19).replace(/[:-]/g, '').replace('T', '-') }}"
-
     - id: fetch
       name: Fetch Base Template
       action: fetch:template
@@ -247,10 +239,10 @@ spec:
           databaseStorageGB: ${{ parameters.databaseStorageGB }}
           databaseInstanceSize: ${{ parameters.databaseInstanceSize }}
           requestNamespace: ${{ parameters.requestNamespace }}
-          randomId: ${{ steps['generate-random'].output.result.randomId }}
-          timestamp: ${{ steps['generate-random'].output.result.timestamp }}
-          uniqueName: "${{ parameters.appName }}-${{ steps['generate-random'].output.result.randomId }}"
-          uniqueFilename: "${{ parameters.appName }}-${{ steps['generate-random'].output.result.randomId }}-${{ steps['generate-random'].output.result.timestamp }}"
+          randomId: "${{ parameters.appName | lower | replace('-', '') | slice(0, 2) }}"
+          timestamp: "generated"
+          uniqueName: "${{ parameters.appName }}-${{ parameters.appName | lower | replace('-', '') | slice(0, 2) }}"
+          uniqueFilename: "${{ parameters.appName }}-request"
 
     - id: publish
       name: Publish to platform-workflow
