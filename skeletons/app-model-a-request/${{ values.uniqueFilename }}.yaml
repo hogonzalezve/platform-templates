@@ -1,0 +1,73 @@
+apiVersion: platform.nttdata.io/v1alpha1
+kind: AppModelA
+metadata:
+  name: ${{ values.uniqueName }}
+  namespace: ${{ values.requestNamespace }}
+  labels:
+    app: ${{ values.appName }}
+    created-by: backstage
+    request-id: "${{ values.randomId }}"
+  annotations:
+    backstage.io/created-at: "${{ values.timestamp }}"
+    backstage.io/requested-by: "${{ user.entity.metadata.name | default('unknown') }}"
+spec:
+  appName: ${{ values.appName }}
+  namespace: ${{ values.targetNamespace }}
+  image: ${{ values.image }}
+  port: ${{ values.port }}
+  replicas: ${{ values.replicas }}
+  serviceType: ${{ values.serviceType }}
+  imagePullPolicy: ${{ values.imagePullPolicy }}
+  gateway:
+    enabled: ${{ values.gatewayEnabled }}
+{%- if values.gatewayEnabled %}
+    hostname: "${{ values.gatewayHostname }}"
+    gatewayName: "nginx-gateway"
+    gatewayNamespace: "nginx-gateway-system"
+    path: "${{ values.gatewayPath }}"
+    tls: ${{ values.gatewayTls }}
+{%- else %}
+    hostname: ""
+    gatewayName: "nginx-gateway"
+    gatewayNamespace: "nginx-gateway-system"
+    path: "/"
+    tls: false
+{%- endif %}
+  storage:
+    enabled: ${{ values.storageEnabled }}
+{%- if values.storageEnabled %}
+    size: "${{ values.storageSize }}"
+    storageClass: "${{ values.storageClass }}"
+    mountPath: "${{ values.storageMountPath }}"
+{%- else %}
+    size: "1Gi"
+    storageClass: "gp3"
+    mountPath: "/data"
+{%- endif %}
+  database:
+    enabled: ${{ values.databaseEnabled }}
+{%- if values.databaseEnabled %}
+    type: "${{ values.databaseType }}"
+    claimApiVersion: "database.example.org/v1alpha1"
+    claimKind: "PostgreSQLInstance"
+    claimName: "${{ values.uniqueName }}-db"
+    parameters:
+      engine: {% if values.databaseType == 'postgresql' %}"postgres"{% elif values.databaseType == 'mysql' %}"mysql"{% else %}"mongodb"{% endif %}
+      version: {% if values.databaseType == 'postgresql' %}"15"{% elif values.databaseType == 'mysql' %}"8.0"{% else %}"6.0"{% endif %}
+      instanceSize: "${{ values.databaseInstanceSize }}"
+      storageGB: ${{ values.databaseStorageGB }}
+      username: "{{ values.appName }}user"
+      publiclyAccessible: false
+{%- else %}
+    type: "postgresql"
+    claimApiVersion: "database.example.org/v1alpha1"
+    claimKind: "PostgreSQLInstance"
+    claimName: ""
+    parameters:
+      engine: "postgres"
+      version: "15"
+      instanceSize: "db.t3.micro"
+      storageGB: 20
+      username: "appuser"
+      publiclyAccessible: false
+{%- endif %}

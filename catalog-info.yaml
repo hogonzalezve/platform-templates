@@ -7,3 +7,4 @@ metadata:
 spec:
   targets:
     - ./templates/microservice-with-rds.yaml
+    - ./templates/app-model-a-request.yaml

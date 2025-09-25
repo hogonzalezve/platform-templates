@@ -1,0 +1,286 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: app-model-a-request
+  title: Deploy AppModelA Application
+  description: Creates a request for deploying an application using AppModelA Promise in Kratix
+  tags:
+    - kratix
+    - application
+    - kubernetes
+    - deployment
+spec:
+  owner: platform-team
+  type: service
+  parameters:
+    - title: Application Information
+      required:
+        - appName
+        - targetNamespace
+        - image
+      properties:
+        appName:
+          title: Application Name
+          type: string
+          description: Name of your application
+          pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
+          ui:help: "Only lowercase letters, numbers and hyphens allowed"
+        targetNamespace:
+          title: Target Namespace
+          type: string
+          description: Kubernetes namespace where the app will be deployed
+          default: demo-namespace
+          pattern: '^[a-z0-9-]+$'
+        image:
+          title: Container Image
+          type: string
+          description: Docker image for your application
+          default: nginx:1.24
+          
+    - title: Application Configuration
+      properties:
+        port:
+          title: Application Port
+          type: integer
+          description: Port the application listens on
+          default: 80
+          minimum: 1
+          maximum: 65535
+        replicas:
+          title: Replicas
+          type: integer
+          description: Number of replicas to deploy
+          default: 2
+          minimum: 1
+          maximum: 10
+        serviceType:
+          title: Service Type
+          type: string
+          description: Kubernetes service type
+          default: ClusterIP
+          enum:
+            - ClusterIP
+            - NodePort
+            - LoadBalancer
+          enumNames:
+            - ClusterIP (Internal only)
+            - NodePort (External port)
+            - LoadBalancer (Cloud LB)
+        imagePullPolicy:
+          title: Image Pull Policy
+          type: string
+          description: When to pull the container image
+          default: IfNotPresent
+          enum:
+            - Always
+            - IfNotPresent
+            - Never
+
+    - title: Gateway Configuration
+      properties:
+        gatewayEnabled:
+          title: Enable Gateway
+          type: boolean
+          description: Enable external access through Gateway API
+          default: false
+        gatewayHostname:
+          title: Hostname
+          type: string
+          description: Domain name for external access
+          condition:
+            properties:
+              gatewayEnabled:
+                const: true
+        gatewayPath:
+          title: Path
+          type: string
+          description: URL path for the application
+          default: "/"
+          condition:
+            properties:
+              gatewayEnabled:
+                const: true
+        gatewayTls:
+          title: Enable TLS
+          type: boolean
+          description: Enable HTTPS/TLS termination
+          default: false
+          condition:
+            properties:
+              gatewayEnabled:
+                const: true
+
+    - title: Storage Configuration
+      properties:
+        storageEnabled:
+          title: Enable Persistent Storage
+          type: boolean
+          description: Add persistent storage to your application
+          default: false
+        storageSize:
+          title: Storage Size
+          type: string
+          description: Size of the persistent volume
+          default: "1Gi"
+          condition:
+            properties:
+              storageEnabled:
+                const: true
+        storageMountPath:
+          title: Mount Path
+          type: string
+          description: Path where storage will be mounted
+          default: "/data"
+          condition:
+            properties:
+              storageEnabled:
+                const: true
+        storageClass:
+          title: Storage Class
+          type: string
+          description: Kubernetes storage class to use
+          default: "gp3"
+          condition:
+            properties:
+              storageEnabled:
+                const: true
+
+    - title: Database Configuration
+      properties:
+        databaseEnabled:
+          title: Enable Database
+          type: boolean
+          description: Request a database for your application
+          default: false
+        databaseType:
+          title: Database Type
+          type: string
+          description: Type of database to provision
+          default: postgresql
+          enum:
+            - postgresql
+            - mysql
+            - mongodb
+          condition:
+            properties:
+              databaseEnabled:
+                const: true
+        databaseStorageGB:
+          title: Database Storage (GB)
+          type: integer
+          description: Size of database storage in GB
+          default: 20
+          minimum: 10
+          maximum: 1000
+          condition:
+            properties:
+              databaseEnabled:
+                const: true
+        databaseInstanceSize:
+          title: Database Instance Size
+          type: string
+          description: Database instance type
+          default: "db.t3.micro"
+          enum:
+            - "db.t3.micro"
+            - "db.t3.small"
+            - "db.t3.medium"
+            - "db.t3.large"
+          condition:
+            properties:
+              databaseEnabled:
+                const: true
+
+    - title: Deployment Configuration
+      required:
+        - requestNamespace
+      properties:
+        requestNamespace:
+          title: Request Namespace
+          type: string
+          description: Namespace where the Kratix request will be created
+          default: default
+          enum:
+            - default
+            - development
+            - staging
+            - production
+          enumNames:
+            - Default (Development)
+            - Development Environment
+            - Staging Environment
+            - Production Environment
+
+  steps:
+    - id: generate-random
+      name: Generate Unique Identifiers
+      action: roadiehq:utils:serialize:yaml
+      input:
+        data:
+          randomId: "${{ '00' | until(100) | random }}"
+          timestamp: "${{ (new Date()).toISOString().substring(0,19).replace(/[:-]/g, '').replace('T', '-') }}"
+
+    - id: fetch
+      name: Fetch Base Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          appName: ${{ parameters.appName }}
+          targetNamespace: ${{ parameters.targetNamespace }}
+          image: ${{ parameters.image }}
+          port: ${{ parameters.port }}
+          replicas: ${{ parameters.replicas }}
+          serviceType: ${{ parameters.serviceType }}
+          imagePullPolicy: ${{ parameters.imagePullPolicy }}
+          gatewayEnabled: ${{ parameters.gatewayEnabled }}
+          gatewayHostname: ${{ parameters.gatewayHostname }}
+          gatewayPath: ${{ parameters.gatewayPath }}
+          gatewayTls: ${{ parameters.gatewayTls }}
+          storageEnabled: ${{ parameters.storageEnabled }}
+          storageSize: ${{ parameters.storageSize }}
+          storageMountPath: ${{ parameters.storageMountPath }}
+          storageClass: ${{ parameters.storageClass }}
+          databaseEnabled: ${{ parameters.databaseEnabled }}
+          databaseType: ${{ parameters.databaseType }}
+          databaseStorageGB: ${{ parameters.databaseStorageGB }}
+          databaseInstanceSize: ${{ parameters.databaseInstanceSize }}
+          requestNamespace: ${{ parameters.requestNamespace }}
+          randomId: ${{ steps['generate-random'].output.result.randomId }}
+          timestamp: ${{ steps['generate-random'].output.result.timestamp }}
+          uniqueName: "${{ parameters.appName }}-${{ steps['generate-random'].output.result.randomId }}"
+          uniqueFilename: "${{ parameters.appName }}-${{ steps['generate-random'].output.result.randomId }}-${{ steps['generate-random'].output.result.timestamp }}"
+
+    - id: publish
+      name: Publish to platform-workflow
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com/hogonzalezve/platform-workflow
+        branchName: "app-request-${{ steps['generate-random'].output.result.uniqueFilename }}"
+        title: "Deploy ${{ parameters.appName }} via AppModelA"
+        description: |
+          ## New AppModelA Application Request
+          
+          **Application:** ${{ parameters.appName }}
+          **Namespace:** ${{ parameters.targetNamespace }}
+          **Image:** ${{ parameters.image }}
+          **Replicas:** ${{ parameters.replicas }}
+          
+          ### Configuration:
+          - **Gateway:** ${{ parameters.gatewayEnabled }}
+          - **Storage:** ${{ parameters.storageEnabled }}
+          - **Database:** ${{ parameters.databaseEnabled }}
+          
+          This PR creates a new Kratix request for deploying the application.
+          Once merged, ArgoCD will process the request automatically.
+        targetPath: kratix/requests
+
+  output:
+    links:
+      - title: Pull Request
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: ArgoCD Applications
+        url: https://argocd.your-domain.com/applications
+      - title: Kratix Platform State
+        url: https://github.com/hogonzalezve/platform-state
