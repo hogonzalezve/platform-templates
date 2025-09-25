@@ -1,0 +1,170 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: app-model-a-delete
+  title: Delete AppModelA Application
+  description: Removes an existing AppModelA application deployment from Kratix
+  tags:
+    - kratix
+    - application
+    - kubernetes
+    - delete
+    - cleanup
+spec:
+  owner: platform-team
+  type: service
+  parameters:
+    - title: Select Application to Delete
+      required:
+        - appToDelete
+        - confirmDeletion
+      properties:
+        appToDelete:
+          title: Application to Delete
+          type: string
+          description: Name of the AppModelA request to remove
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - AppModelA
+            defaultNamespace: default
+        requestNamespace:
+          title: Request Namespace
+          type: string
+          description: Namespace where the original request was created
+          default: default
+          enum:
+            - default
+            - development
+            - staging
+            - production
+          enumNames:
+            - Default (Development)
+            - Development Environment
+            - Staging Environment
+            - Production Environment
+        confirmDeletion:
+          title: Confirm Deletion
+          type: boolean
+          description: I understand this will permanently delete the application and all its resources
+          ui:widget: checkbox
+          ui:help: "This action cannot be undone. All application resources will be removed."
+        
+    - title: Deletion Options
+      properties:
+        deleteResources:
+          title: Delete Associated Resources
+          type: boolean
+          description: Also delete associated database claims and storage
+          default: true
+          ui:help: "Uncheck only if you want to preserve data for later use"
+        forceDelete:
+          title: Force Delete (Skip Finalizers)
+          type: boolean
+          description: Force deletion even if resources are stuck
+          default: false
+          ui:help: "Use only if normal deletion fails"
+
+  steps:
+    - id: validate-app
+      name: Validate Application Exists
+      action: http:backstage:request
+      input:
+        method: GET
+        url: https://api.github.com/repos/hogonzalezve/platform-workflow/contents/kratix/requests
+        headers:
+          Authorization: token ${{ secrets.GITHUB_TOKEN }}
+
+    - id: generate-deletion-script
+      name: Generate Deletion Commands
+      action: roadiehq:utils:serialize:yaml
+      input:
+        data:
+          timestamp: "${{ (new Date()).toISOString().substring(0,19).replace(/[:-]/g, '').replace('T', '-') }}"
+          deletionCommands: |
+            # Delete AppModelA request
+            kubectl delete appmodela ${{ parameters.appToDelete }} -n ${{ parameters.requestNamespace }} --ignore-not-found
+            
+            {% if parameters.deleteResources %}
+            # Delete associated database claim (if exists)
+            kubectl delete postgresqlinstance ${{ parameters.appToDelete }}-db -n ${{ parameters.requestNamespace }} --ignore-not-found
+            
+            # Delete persistent volume claims
+            kubectl delete pvc -l app=${{ parameters.appToDelete }} -n ${{ parameters.requestNamespace }} --ignore-not-found
+            {% endif %}
+            
+            {% if parameters.forceDelete %}
+            # Force delete if stuck
+            kubectl patch appmodela ${{ parameters.appToDelete }} -n ${{ parameters.requestNamespace }} -p '{"metadata":{"finalizers":[]}}' --type=merge
+            {% endif %}
+
+    - id: fetch-deletion-template
+      name: Fetch Deletion Template
+      action: fetch:template
+      input:
+        url: ./skeleton-delete
+        values:
+          appToDelete: ${{ parameters.appToDelete }}
+          requestNamespace: ${{ parameters.requestNamespace }}
+          deleteResources: ${{ parameters.deleteResources }}
+          forceDelete: ${{ parameters.forceDelete }}
+          timestamp: ${{ steps['generate-deletion-script'].output.result.timestamp }}
+          deletionCommands: ${{ steps['generate-deletion-script'].output.result.deletionCommands }}
+          requestedBy: "${{ user.entity.metadata.name | default('unknown') }}"
+
+    - id: create-deletion-pr
+      name: Create Deletion Pull Request
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com/hogonzalezve/platform-workflow
+        branchName: "delete-app-${{ parameters.appToDelete }}-${{ steps['generate-deletion-script'].output.result.timestamp }}"
+        title: "🗑️ Delete AppModelA: ${{ parameters.appToDelete }}"
+        description: |
+          ## Application Deletion Request
+          
+          **Application:** `${{ parameters.appToDelete }}`
+          **Namespace:** `${{ parameters.requestNamespace }}`
+          **Requested by:** ${{ user.entity.metadata.name }}
+          **Delete Resources:** ${{ parameters.deleteResources }}
+          **Force Delete:** ${{ parameters.forceDelete }}
+          
+          ### What will be deleted:
+          - ✅ AppModelA request: `${{ parameters.appToDelete }}`
+          - ✅ Generated Works and pipeline artifacts
+          - {% if parameters.deleteResources %}✅ Database claims and storage{% else %}❌ Database claims and storage (preserved){% endif %}
+          
+          ### Deletion Process:
+          1. **Merge this PR** to remove the request file
+          2. **ArgoCD** will detect the removal and clean up resources
+          3. **Kratix** will handle finalizers and cleanup
+          
+          ⚠️ **This action cannot be undone once merged**
+        targetPath: kratix/requests
+        deleteFiles:
+          - "${{ parameters.appToDelete }}*.yaml"  # Delete any files matching the app name
+
+  output:
+    links:
+      - title: Deletion Pull Request
+        url: ${{ steps['create-deletion-pr'].output.remoteUrl }}
+      - title: ArgoCD Applications
+        url: https://argocd.your-domain.com/applications
+      - title: Kubernetes Dashboard
+        url: https://k8s-dashboard.your-domain.com
+    text:
+      - title: Next Steps
+        content: |
+          ### Deletion initiated successfully! 
+          
+          **Pull Request created:** [${{ steps['create-deletion-pr'].output.remoteUrl }}](${{ steps['create-deletion-pr'].output.remoteUrl }})
+          
+          **To complete the deletion:**
+          1. Review the Pull Request
+          2. Merge when ready to delete the application
+          3. Monitor ArgoCD for cleanup progress
+          
+          **Cleanup timeline:**
+          - PR merge → Immediate
+          - ArgoCD sync → ~3 minutes  
+          - Kratix cleanup → 5-10 minutes
+          - Resource deletion → 5-15 minutes (depends on resources)

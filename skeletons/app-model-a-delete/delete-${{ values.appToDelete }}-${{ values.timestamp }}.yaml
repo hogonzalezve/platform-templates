@@ -1,0 +1,83 @@
+# AppModelA Deletion Request
+# This file triggers the deletion of: {{ values.appToDelete }}
+# Generated at: {{ values.timestamp }}
+# Requested by: {{ values.requestedBy }}
+
+---
+# Delete marker - ArgoCD will process this and remove the original request
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: delete-{{ values.appToDelete }}-{{ values.timestamp }}
+  namespace: kratix-system
+  labels:
+    kratix.io/deletion-request: "true"
+    kratix.io/target-app: "{{ values.appToDelete }}"
+    kratix.io/target-namespace: "{{ values.requestNamespace }}"
+    kratix.io/delete-resources: "{{ values.deleteResources }}"
+    kratix.io/force-delete: "{{ values.forceDelete }}"
+  annotations:
+    backstage.io/requested-by: "{{ values.requestedBy }}"
+    backstage.io/deletion-timestamp: "{{ values.timestamp }}"
+data:
+  deletion-commands: |
+{{ values.deletionCommands | indent(4) }}
+  
+  target-files: |
+    # Files to be deleted from platform-workflow/kratix/requests/
+    {{ values.appToDelete }}*.yaml
+  
+  cleanup-notes: |
+    This deletion request will:
+    1. Remove the AppModelA request: {{ values.appToDelete }}
+    2. Trigger Kratix cleanup process
+    3. {% if values.deleteResources %}Delete associated databases and storage{% else %}Preserve databases and storage{% endif %}
+    4. {% if values.forceDelete %}Force delete stuck resources{% else %}Use standard deletion with finalizers{% endif %}
+
+---
+# Deletion job to clean up the original request file
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cleanup-{{ values.appToDelete }}-{{ values.timestamp }}
+  namespace: kratix-system
+  labels:
+    kratix.io/cleanup-job: "true"
+    kratix.io/target-app: "{{ values.appToDelete }}"
+spec:
+  template:
+    metadata:
+      labels:
+        kratix.io/cleanup-job: "true"
+    spec:
+      serviceAccountName: kratix-cleanup # Needs to be created with proper permissions
+      containers:
+      - name: cleanup
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "🗑️ Starting cleanup for application: {{ values.appToDelete }}"
+          echo "📍 Target namespace: {{ values.requestNamespace }}"
+          
+          # Delete the AppModelA request
+          echo "Deleting AppModelA request..."
+          kubectl delete appmodela {{ values.appToDelete }} -n {{ values.requestNamespace }} --ignore-not-found
+          
+          {% if values.deleteResources %}
+          # Delete associated resources
+          echo "Deleting associated resources..."
+          kubectl delete postgresqlinstance {{ values.appToDelete }}-db -n {{ values.requestNamespace }} --ignore-not-found || true
+          kubectl delete pvc -l app={{ values.appToDelete }} -n {{ values.requestNamespace }} --ignore-not-found || true
+          {% endif %}
+          
+          {% if values.forceDelete %}
+          # Force cleanup if needed
+          echo "Force cleaning stuck resources..."
+          kubectl patch appmodela {{ values.appToDelete }} -n {{ values.requestNamespace }} -p '{"metadata":{"finalizers":[]}}' --type=merge || true
+          {% endif %}
+          
+          echo "✅ Cleanup completed for {{ values.appToDelete }}"
+      restartPolicy: Never
+  backoffLimit: 3
