@@ -249,7 +249,7 @@ spec:
       action: publish:github:pull-request
       input:
         repoUrl: github.com?repo=platform-workflow&owner=hogonzalezve
-        branchName: "app-request-${{ parameters.appName }}-${{ user.entity.metadata.name | default('user') }}-${{ parameters.targetNamespace }}-${{ '' + new Date().valueOf() }}"
+        branchName: "app-request-${{ parameters.appName | lower | replace('_', '-') }}-${{ parameters.targetNamespace | lower | replace('_', '-') }}"
         title: "Deploy ${{ parameters.appName }} via AppModelA"
         description: |
           ## New AppModelA Application Request
