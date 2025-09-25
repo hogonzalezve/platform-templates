@@ -6,6 +6,6 @@ metadata:
   description: Colección de plantillas (Scaffolder)
 spec:
   targets:
-    - ./templates/microservice-with-rds.yaml
+    - ./templates/microservice-with-db.yaml
     - ./templates/app-model-a-request.yaml
     - ./templates/app-model-a-delete.yaml
