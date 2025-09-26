@@ -102,7 +102,7 @@ spec:
       name: Fetch Deletion Template
       action: fetch:template
       input:
-        url: ./skeleton-delete
+        url: ../skeletons/app-model-a-delete
         values:
           appToDelete: ${{ parameters.appToDelete }}
           requestNamespace: ${{ parameters.requestNamespace }}

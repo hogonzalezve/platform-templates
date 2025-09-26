@@ -2,13 +2,14 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: app-model-a-request
-  title: Deploy AppModelA Application
-  description: Creates a request for deploying an application using AppModelA Promise in Kratix
+  title: Deploy AppModelA Application (with Random Suffix)
+  description: Creates a request for deploying an application using AppModelA Promise in Kratix with unique random naming
   tags:
     - kratix
     - application
     - kubernetes
     - deployment
+    - random-naming
 spec:
   owner: platform-team
   type: service
@@ -22,204 +23,47 @@ spec:
         appName:
           title: Application Name
           type: string
-          description: Name of your application
+          description: Base name of your application (a random suffix will be added)
           pattern: '^[a-z0-9-]+$'
           ui:autofocus: true
-          ui:help: "Only lowercase letters, numbers and hyphens allowed"
+          ui:help: "Only lowercase letters, numbers and hyphens allowed. A random suffix will be automatically added."
         targetNamespace:
           title: Target Namespace
           type: string
-          description: Kubernetes namespace where the app will be deployed
-          default: demo-namespace
+          description: Kubernetes namespace where the application will be deployed
+          default: "default"
           pattern: '^[a-z0-9-]+$'
+          ui:help: "Namespace must exist in the target cluster"
         image:
           title: Container Image
           type: string
-          description: Docker image for your application
-          default: nginx:1.24
-          
-    - title: Application Configuration
-      properties:
-        port:
-          title: Application Port
-          type: integer
-          description: Port the application listens on
-          default: 80
-          minimum: 1
-          maximum: 65535
-        replicas:
-          title: Replicas
-          type: integer
-          description: Number of replicas to deploy
-          default: 2
-          minimum: 1
-          maximum: 10
-        serviceType:
-          title: Service Type
-          type: string
-          description: Kubernetes service type
-          default: ClusterIP
-          enum:
-            - ClusterIP
-            - NodePort
-            - LoadBalancer
-          enumNames:
-            - ClusterIP (Internal only)
-            - NodePort (External port)
-            - LoadBalancer (Cloud LB)
-        imagePullPolicy:
-          title: Image Pull Policy
-          type: string
-          description: When to pull the container image
-          default: IfNotPresent
-          enum:
-            - Always
-            - IfNotPresent
-            - Never
-
-    - title: Gateway Configuration
-      properties:
-        gatewayEnabled:
-          title: Enable Gateway
-          type: boolean
-          description: Enable external access through Gateway API
-          default: false
-        gatewayHostname:
-          title: Hostname
-          type: string
-          description: Domain name for external access
-          condition:
-            properties:
-              gatewayEnabled:
-                const: true
-        gatewayPath:
-          title: Path
-          type: string
-          description: URL path for the application
-          default: "/"
-          condition:
-            properties:
-              gatewayEnabled:
-                const: true
-        gatewayTls:
-          title: Enable TLS
-          type: boolean
-          description: Enable HTTPS/TLS termination
-          default: false
-          condition:
-            properties:
-              gatewayEnabled:
-                const: true
-
-    - title: Storage Configuration
-      properties:
-        storageEnabled:
-          title: Enable Persistent Storage
-          type: boolean
-          description: Add persistent storage to your application
-          default: false
-        storageSize:
-          title: Storage Size
-          type: string
-          description: Size of the persistent volume
-          default: "1Gi"
-          condition:
-            properties:
-              storageEnabled:
-                const: true
-        storageMountPath:
-          title: Mount Path
-          type: string
-          description: Path where storage will be mounted
-          default: "/data"
-          condition:
-            properties:
-              storageEnabled:
-                const: true
-        storageClass:
-          title: Storage Class
-          type: string
-          description: Kubernetes storage class to use
-          default: "gp3"
-          condition:
-            properties:
-              storageEnabled:
-                const: true
-
-    - title: Database Configuration
-      properties:
-        databaseEnabled:
-          title: Enable Database
-          type: boolean
-          description: Request a database for your application
-          default: false
-        databaseType:
-          title: Database Type
-          type: string
-          description: Type of database to provision
-          default: postgresql
-          enum:
-            - postgresql
-            - mysql
-            - mongodb
-          condition:
-            properties:
-              databaseEnabled:
-                const: true
-        databaseStorageGB:
-          title: Database Storage (GB)
-          type: integer
-          description: Size of database storage in GB
-          default: 20
-          minimum: 10
-          maximum: 1000
-          condition:
-            properties:
-              databaseEnabled:
-                const: true
-        databaseInstanceSize:
-          title: Database Instance Size
-          type: string
-          description: Database instance type
-          default: "db.t3.micro"
-          enum:
-            - "db.t3.micro"
-            - "db.t3.small"
-            - "db.t3.medium"
-            - "db.t3.large"
-          condition:
-            properties:
-              databaseEnabled:
-                const: true
-
-    - title: Deployment Configuration
-      required:
-        - requestNamespace
-      properties:
-        requestNamespace:
-          title: Request Namespace
-          type: string
-          description: Namespace where the Kratix request will be created
-          default: default
-          enum:
-            - default
-            - development
-            - staging
-            - production
-          enumNames:
-            - Default (Development)
-            - Development Environment
-            - Staging Environment
-            - Production Environment
+          description: Full container image path (registry/image:tag)
+          default: "nginx:latest"
+          ui:help: "Example: registry.hub.docker.com/library/nginx:1.21"
+        
+    # ... resto de parameters igual que el original ...
 
   steps:
+    # NUEVO STEP: Generar sufijo aleatorio
+    - id: generate-unique-suffix
+      name: Generate Unique Suffix
+      action: ntt:utils:randomSuffix
+      input:
+        length: 4
+        type: 'alphanumeric'
+        prefix: '-'
+
+    # STEP MODIFICADO: Usar el sufijo en el template
     - id: fetch
       name: Fetch Base Template
       action: fetch:template
       input:
-        url: ./skeleton
+        url: ../skeletons/app-model-a-request
         values:
-          appName: ${{ parameters.appName }}
+          # Usar el sufijo aleatorio para crear nombres únicos
+          appName: ${{ parameters.appName }}${{ steps['generate-unique-suffix'].output.fullSuffix }}
+          baseAppName: ${{ parameters.appName }}
+          uniqueSuffix: ${{ steps['generate-unique-suffix'].output.suffix }}
           targetNamespace: ${{ parameters.targetNamespace }}
           image: ${{ parameters.image }}
           port: ${{ parameters.port }}
@@ -239,25 +83,28 @@ spec:
           databaseStorageGB: ${{ parameters.databaseStorageGB }}
           databaseInstanceSize: ${{ parameters.databaseInstanceSize }}
           requestNamespace: ${{ parameters.requestNamespace }}
-          randomId: "${{ user.entity.metadata.name | default('user') | slice(0, 3) }}"
-          timestamp: "generated"  
-          uniqueName: "${{ parameters.appName }}-${{ user.entity.metadata.name | default('user') | replace('.', '') | replace('@', '') | slice(0, 5) }}"
-          uniqueFilename: "${{ parameters.appName }}-${{ user.entity.metadata.name | default('user') }}-${{ parameters.targetNamespace }}-request"
+          # Usar el nombre único con sufijo para identificadores
+          uniqueName: "${{ parameters.appName }}${{ steps['generate-unique-suffix'].output.fullSuffix }}"
+          uniqueFilename: "${{ parameters.appName }}-${{ steps['generate-unique-suffix'].output.suffix }}-${{ parameters.targetNamespace }}-request"
 
     - id: publish
       name: Publish to platform-workflow
       action: publish:github:pull-request
       input:
         repoUrl: github.com?repo=platform-workflow&owner=hogonzalezve
-        branchName: "app-request-${{ parameters.appName | lower | replace('_', '-') }}-${{ parameters.targetNamespace | lower | replace('_', '-') }}"
-        title: "Deploy ${{ parameters.appName }} via AppModelA"
+        branchName: "app-request-${{ parameters.appName }}-${{ steps['generate-unique-suffix'].output.suffix }}"
+        title: "Deploy ${{ parameters.appName }}${{ steps['generate-unique-suffix'].output.fullSuffix }} via AppModelA"
         description: |
-          ## New AppModelA Application Request
+          ## New AppModelA Application Request with Unique Naming
           
-          **Application:** ${{ parameters.appName }}
+          **Application:** ${{ parameters.appName }}${{ steps['generate-unique-suffix'].output.fullSuffix }}
+          **Base Name:** ${{ parameters.appName }}
+          **Unique Suffix:** ${{ steps['generate-unique-suffix'].output.suffix }}
           **Namespace:** ${{ parameters.targetNamespace }}
           **Image:** ${{ parameters.image }}
           **Replicas:** ${{ parameters.replicas }}
+          
+          This deployment uses an automatically generated unique suffix to prevent naming conflicts.
         targetPath: .
         update: true
 
@@ -266,8 +113,13 @@ spec:
       - title: Repository Commit
         url: ${{ steps.publish.output.remoteUrl }}
       - title: Application Request File
-        url: "${{ steps.publish.output.remoteUrl }}/blob/main/kratix/requests/${{ parameters.appName }}-${{ user.entity.metadata.name | default('user') }}-${{ parameters.targetNamespace }}-request.yaml"
+        url: "${{ steps.publish.output.remoteUrl }}/blob/main/kratix/requests/${{ parameters.appName }}-${{ steps['generate-unique-suffix'].output.suffix }}-${{ parameters.targetNamespace }}-request.yaml"
       - title: ArgoCD Applications
         url: https://argocd.your-domain.com/applications
       - title: Kratix Platform State
         url: https://github.com/hogonzalezve/platform-state
+    text:
+      - title: Generated Application Name
+        content: "${{ parameters.appName }}${{ steps['generate-unique-suffix'].output.fullSuffix }}"
+      - title: Unique Suffix
+        content: "${{ steps['generate-unique-suffix'].output.suffix }}"

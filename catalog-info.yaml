@@ -3,9 +3,11 @@ apiVersion: backstage.io/v1alpha1
 kind: Location
 metadata:
   name: platform-templates
-  description: Colección de plantillas (Scaffolder)
+  description: 🚀 Colección de plantillas Scaffolder para Platform Engineering
+  annotations:
+    backstage.io/source-location: url:https://github.com/hogonzalezve/platform-templates/
 spec:
   targets:
-    - ./templates/microservice-with-db.yaml
+    # Templates con generación automática de sufijos únicos
     - ./templates/app-model-a-request.yaml
     - ./templates/app-model-a-delete.yaml
