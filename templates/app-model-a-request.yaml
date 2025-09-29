@@ -40,8 +40,113 @@ spec:
           description: Full container image path (registry/image:tag)
           default: "nginx:latest"
           ui:help: "Example: registry.hub.docker.com/library/nginx:1.21"
-        
-    # ... resto de parameters igual que el original ...
+        port:
+          title: Application Port
+          type: integer
+          description: Port where the application listens
+          default: 80
+          minimum: 1
+          maximum: 65535
+        replicas:
+          title: Number of Replicas
+          type: integer
+          description: Number of pod replicas to deploy
+          default: 1
+          minimum: 1
+          maximum: 10
+        serviceType:
+          title: Service Type
+          type: string
+          description: Kubernetes service type
+          default: "ClusterIP"
+          enum:
+            - ClusterIP
+            - NodePort
+            - LoadBalancer
+        imagePullPolicy:
+          title: Image Pull Policy
+          type: string
+          description: Image pull policy for containers
+          default: "Always"
+          enum:
+            - Always
+            - IfNotPresent
+            - Never
+        gatewayEnabled:
+          title: Enable Gateway
+          type: boolean
+          description: Enable ingress gateway for external access
+          default: false
+        gatewayHostname:
+          title: Gateway Hostname
+          type: string
+          description: Hostname for the gateway (if enabled)
+          default: ""
+        gatewayPath:
+          title: Gateway Path
+          type: string
+          description: Path prefix for the gateway
+          default: "/"
+        gatewayTls:
+          title: Enable TLS
+          type: boolean
+          description: Enable TLS for the gateway
+          default: false
+        storageEnabled:
+          title: Enable Storage
+          type: boolean
+          description: Enable persistent storage
+          default: false
+        storageSize:
+          title: Storage Size
+          type: string
+          description: Size of persistent storage (if enabled)
+          default: "1Gi"
+        storageMountPath:
+          title: Storage Mount Path
+          type: string
+          description: Mount path for persistent storage
+          default: "/data"
+        storageClass:
+          title: Storage Class
+          type: string
+          description: Kubernetes storage class
+          default: "gp3"
+        databaseEnabled:
+          title: Enable Database
+          type: boolean
+          description: Enable database for the application
+          default: false
+        databaseType:
+          title: Database Type
+          type: string
+          description: Type of database (if enabled)
+          default: "postgresql"
+          enum:
+            - postgresql
+            - mysql
+            - mongodb
+        databaseStorageGB:
+          title: Database Storage (GB)
+          type: integer
+          description: Database storage size in GB
+          default: 10
+          minimum: 5
+          maximum: 100
+        databaseInstanceSize:
+          title: Database Instance Size
+          type: string
+          description: Database instance size
+          default: "small"
+          enum:
+            - small
+            - medium
+            - large
+        requestNamespace:
+          title: Request Namespace
+          type: string
+          description: Namespace where the request will be created
+          default: "kratix-worker-system"
 
   steps:
     # NUEVO STEP: Generar sufijo aleatorio
