@@ -105,7 +105,7 @@ spec:
           **Replicas:** ${{ parameters.replicas }}
           
           This deployment uses an automatically generated unique suffix to prevent naming conflicts.
-        targetPath: .
+        targetPath: kratix/requests
         update: true
 
   output:
