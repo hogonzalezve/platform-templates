@@ -147,6 +147,12 @@ spec:
           type: string
           description: Namespace where the request will be created
           default: "kratix-worker-system"
+        timestamp:
+          title: Timestamp
+          type: string
+          description: Creation timestamp
+          default: ""
+          ui:widget: "hidden"
 
   steps:
     # NUEVO STEP: Generar sufijo aleatorio
@@ -171,29 +177,29 @@ spec:
           uniqueSuffix: ${{ steps['generate-unique-suffix'].output.suffix }}
           targetNamespace: ${{ parameters.targetNamespace }}
           image: ${{ parameters.image }}
-          port: ${{ parameters.port }}
-          replicas: ${{ parameters.replicas }}
-          serviceType: ${{ parameters.serviceType }}
-          imagePullPolicy: ${{ parameters.imagePullPolicy }}
-          gatewayEnabled: ${{ parameters.gatewayEnabled }}
-          gatewayHostname: ${{ parameters.gatewayHostname }}
-          gatewayPath: ${{ parameters.gatewayPath }}
-          gatewayTls: ${{ parameters.gatewayTls }}
-          storageEnabled: ${{ parameters.storageEnabled }}
-          storageSize: ${{ parameters.storageSize }}
-          storageMountPath: ${{ parameters.storageMountPath }}
-          storageClass: ${{ parameters.storageClass }}
-          databaseEnabled: ${{ parameters.databaseEnabled }}
-          databaseType: ${{ parameters.databaseType }}
-          databaseStorageGB: ${{ parameters.databaseStorageGB }}
-          databaseInstanceSize: ${{ parameters.databaseInstanceSize }}
-          requestNamespace: ${{ parameters.requestNamespace }}
+          port: ${{ parameters.port | default(80) }}
+          replicas: ${{ parameters.replicas | default(1) }}
+          serviceType: ${{ parameters.serviceType | default('ClusterIP') }}
+          imagePullPolicy: ${{ parameters.imagePullPolicy | default('Always') }}
+          gatewayEnabled: ${{ parameters.gatewayEnabled | default(false) }}
+          gatewayHostname: ${{ parameters.gatewayHostname | default('') }}
+          gatewayPath: ${{ parameters.gatewayPath | default('/') }}
+          gatewayTls: ${{ parameters.gatewayTls | default(false) }}
+          storageEnabled: ${{ parameters.storageEnabled | default(false) }}
+          storageSize: ${{ parameters.storageSize | default('1Gi') }}
+          storageMountPath: ${{ parameters.storageMountPath | default('/data') }}
+          storageClass: ${{ parameters.storageClass | default('gp3') }}
+          databaseEnabled: ${{ parameters.databaseEnabled | default(false) }}
+          databaseType: ${{ parameters.databaseType | default('postgresql') }}
+          databaseStorageGB: ${{ parameters.databaseStorageGB | default(10) }}
+          databaseInstanceSize: ${{ parameters.databaseInstanceSize | default('small') }}
+          requestNamespace: ${{ parameters.requestNamespace | default('kratix-worker-system') }}
           # Usar el nombre único con sufijo para identificadores
           uniqueName: "${{ parameters.appName }}${{ steps['generate-unique-suffix'].output.fullSuffix }}"
           uniqueFilename: "${{ parameters.appName }}-${{ steps['generate-unique-suffix'].output.suffix }}-${{ parameters.targetNamespace }}-request"
           # Variables adicionales para metadatos
           randomId: "${{ steps['generate-unique-suffix'].output.suffix }}"
-          timestamp: "${{ '' | moment }}"
+          timestamp: "${{ parameters.timestamp | default('2024-01-01T00:00:00Z') }}"
 
     - id: publish
       name: Publish to platform-workflow

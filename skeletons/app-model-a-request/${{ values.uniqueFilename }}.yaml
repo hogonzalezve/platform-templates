@@ -2,30 +2,30 @@ apiVersion: platform.nttdata.io/v1alpha1
 kind: AppModelA
 metadata:
   name: ${{ values.uniqueName }}
-  namespace: ${{ values.requestNamespace | default('kratix-worker-system') }}
+  namespace: ${{ values.requestNamespace }}
   labels:
     app: ${{ values.uniqueName }}
     created-by: backstage
-    request-id: "${{ values.randomId | default('unknown') }}"
+    request-id: "${{ values.randomId }}"
   annotations:
-    backstage.io/created-at: "${{ values.timestamp | default('' | moment) }}"
+    backstage.io/created-at: "${{ values.timestamp }}"
     backstage.io/requested-by: "${{ user.entity.metadata.name | default('unknown') }}"
 spec:
   appName: ${{ values.baseAppName | default(values.appName) }}
   namespace: ${{ values.targetNamespace }}
   image: ${{ values.image }}
-  port: ${{ values.port | default(80) }}
-  replicas: ${{ values.replicas | default(1) }}
-  serviceType: ${{ values.serviceType | default('ClusterIP') }}
-  imagePullPolicy: ${{ values.imagePullPolicy | default('Always') }}
+  port: ${{ values.port }}
+  replicas: ${{ values.replicas }}
+  serviceType: ${{ values.serviceType }}
+  imagePullPolicy: ${{ values.imagePullPolicy }}
   gateway:
-    enabled: ${{ values.gatewayEnabled | default(false) }}
+    enabled: ${{ values.gatewayEnabled }}
 {%- if values.gatewayEnabled %}
     hostname: "${{ values.gatewayHostname }}"
     gatewayName: "nginx-gateway"
     gatewayNamespace: "nginx-gateway-system"
-    path: "${{ values.gatewayPath | default('/') }}"
-    tls: ${{ values.gatewayTls | default(false) }}
+    path: "${{ values.gatewayPath }}"
+    tls: ${{ values.gatewayTls }}
 {%- else %}
     hostname: ""
     gatewayName: "nginx-gateway"
@@ -34,7 +34,7 @@ spec:
     tls: false
 {%- endif %}
   storage:
-    enabled: ${{ values.storageEnabled | default(false) }}
+    enabled: ${{ values.storageEnabled }}
 {%- if values.storageEnabled %}
     size: "${{ values.storageSize }}"
     storageClass: "${{ values.storageClass }}"
@@ -45,7 +45,7 @@ spec:
     mountPath: "/data"
 {%- endif %}
   database:
-    enabled: ${{ values.databaseEnabled | default(false) }}
+    enabled: ${{ values.databaseEnabled }}
 {%- if values.databaseEnabled %}
     type: "${{ values.databaseType }}"
     claimApiVersion: "database.example.org/v1alpha1"
