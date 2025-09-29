@@ -146,7 +146,7 @@ spec:
           title: Request Namespace
           type: string
           description: Namespace where the request will be created
-          default: "kratix-worker-system"
+          default: "kratix-system"
         timestamp:
           title: Timestamp
           type: string
@@ -175,7 +175,7 @@ spec:
           appName: ${{ parameters.appName }}${{ steps['generate-unique-suffix'].output.fullSuffix }}
           baseAppName: ${{ parameters.appName }}
           uniqueSuffix: ${{ steps['generate-unique-suffix'].output.suffix }}
-          targetNamespace: ${{ parameters.targetNamespace }}
+          targetNamespace: ${{ parameters.targetNamespace }}${{ steps['generate-unique-suffix'].output.fullSuffix }}
           image: ${{ parameters.image }}
           port: ${{ parameters.port | default(80) }}
           replicas: ${{ parameters.replicas | default(1) }}
@@ -193,7 +193,7 @@ spec:
           databaseType: ${{ parameters.databaseType | default('postgresql') }}
           databaseStorageGB: ${{ parameters.databaseStorageGB | default(10) }}
           databaseInstanceSize: ${{ parameters.databaseInstanceSize | default('small') }}
-          requestNamespace: ${{ parameters.requestNamespace | default('kratix-worker-system') }}
+          requestNamespace: ${{ parameters.requestNamespace | default('kratix-system') }}
           # Usar el nombre único con sufijo para identificadores
           uniqueName: "${{ parameters.appName }}${{ steps['generate-unique-suffix'].output.fullSuffix }}"
           uniqueFilename: "${{ parameters.appName }}-${{ steps['generate-unique-suffix'].output.suffix }}-${{ parameters.targetNamespace }}-request"

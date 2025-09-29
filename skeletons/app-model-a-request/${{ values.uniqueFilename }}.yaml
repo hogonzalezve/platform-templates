@@ -11,7 +11,7 @@ metadata:
     backstage.io/created-at: "${{ values.timestamp }}"
     backstage.io/requested-by: "${{ user.entity.metadata.name | default('unknown') }}"
 spec:
-  appName: ${{ values.baseAppName | default(values.appName) }}
+  appName: ${{ values.appName }}
   namespace: ${{ values.targetNamespace }}
   image: ${{ values.image }}
   port: ${{ values.port }}
