@@ -2,30 +2,30 @@ apiVersion: platform.nttdata.io/v1alpha1
 kind: AppModelA
 metadata:
   name: ${{ values.uniqueName }}
-  namespace: ${{ values.requestNamespace }}
+  namespace: ${{ values.requestNamespace | default('kratix-worker-system') }}
   labels:
-    app: ${{ values.appName }}
+    app: ${{ values.uniqueName }}
     created-by: backstage
-    request-id: "${{ values.randomId }}"
+    request-id: "${{ values.randomId | default('unknown') }}"
   annotations:
-    backstage.io/created-at: "${{ values.timestamp }}"
+    backstage.io/created-at: "${{ values.timestamp | default('' | moment) }}"
     backstage.io/requested-by: "${{ user.entity.metadata.name | default('unknown') }}"
 spec:
-  appName: ${{ values.appName }}
+  appName: ${{ values.baseAppName | default(values.appName) }}
   namespace: ${{ values.targetNamespace }}
   image: ${{ values.image }}
-  port: ${{ values.port }}
-  replicas: ${{ values.replicas }}
-  serviceType: ${{ values.serviceType }}
-  imagePullPolicy: ${{ values.imagePullPolicy }}
+  port: ${{ values.port | default(80) }}
+  replicas: ${{ values.replicas | default(1) }}
+  serviceType: ${{ values.serviceType | default('ClusterIP') }}
+  imagePullPolicy: ${{ values.imagePullPolicy | default('Always') }}
   gateway:
-    enabled: ${{ values.gatewayEnabled }}
+    enabled: ${{ values.gatewayEnabled | default(false) }}
 {%- if values.gatewayEnabled %}
     hostname: "${{ values.gatewayHostname }}"
     gatewayName: "nginx-gateway"
     gatewayNamespace: "nginx-gateway-system"
-    path: "${{ values.gatewayPath }}"
-    tls: ${{ values.gatewayTls }}
+    path: "${{ values.gatewayPath | default('/') }}"
+    tls: ${{ values.gatewayTls | default(false) }}
 {%- else %}
     hostname: ""
     gatewayName: "nginx-gateway"
@@ -34,7 +34,7 @@ spec:
     tls: false
 {%- endif %}
   storage:
-    enabled: ${{ values.storageEnabled }}
+    enabled: ${{ values.storageEnabled | default(false) }}
 {%- if values.storageEnabled %}
     size: "${{ values.storageSize }}"
     storageClass: "${{ values.storageClass }}"
@@ -45,7 +45,7 @@ spec:
     mountPath: "/data"
 {%- endif %}
   database:
-    enabled: ${{ values.databaseEnabled }}
+    enabled: ${{ values.databaseEnabled | default(false) }}
 {%- if values.databaseEnabled %}
     type: "${{ values.databaseType }}"
     claimApiVersion: "database.example.org/v1alpha1"

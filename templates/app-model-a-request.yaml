@@ -191,6 +191,9 @@ spec:
           # Usar el nombre único con sufijo para identificadores
           uniqueName: "${{ parameters.appName }}${{ steps['generate-unique-suffix'].output.fullSuffix }}"
           uniqueFilename: "${{ parameters.appName }}-${{ steps['generate-unique-suffix'].output.suffix }}-${{ parameters.targetNamespace }}-request"
+          # Variables adicionales para metadatos
+          randomId: "${{ steps['generate-unique-suffix'].output.suffix }}"
+          timestamp: "${{ '' | moment }}"
 
     - id: publish
       name: Publish to platform-workflow
