@@ -41,7 +41,7 @@ spec:
     mountPath: "${{ values.storageMountPath }}"
 {%- else %}
     size: "1Gi"
-    storageClass: "gp3"
+    storageClass: "gp2"
     mountPath: "/data"
 {%- endif %}
   database:

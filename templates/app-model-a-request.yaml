@@ -111,7 +111,7 @@ spec:
           title: Storage Class
           type: string
           description: Kubernetes storage class
-          default: "gp3"
+          default: "gp2"
         databaseEnabled:
           title: Enable Database
           type: boolean
@@ -183,7 +183,7 @@ spec:
           storageEnabled: ${{ parameters.storageEnabled | default(false) }}
           storageSize: ${{ parameters.storageSize | default('1Gi') }}
           storageMountPath: ${{ parameters.storageMountPath | default('/data') }}
-          storageClass: ${{ parameters.storageClass | default('gp3') }}
+          storageClass: ${{ parameters.storageClass | default('gp2') }}
           databaseEnabled: ${{ parameters.databaseEnabled | default(false) }}
           databaseType: ${{ parameters.databaseType | default('postgresql') }}
           databaseStorageGB: ${{ parameters.databaseStorageGB | default(10) }}
