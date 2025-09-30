@@ -2,7 +2,7 @@ apiVersion: platform.example.io/v1alpha1
 kind: AppStack
 metadata:
   name: ${{ parameters.appName }}
-  namespace: kratix-system
+  namespace: kratix-worker-system
 spec:
   appName: ${{ parameters.appName }}
   namespace: ${{ parameters.namespace }}

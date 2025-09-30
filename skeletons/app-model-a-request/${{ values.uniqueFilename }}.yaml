@@ -2,7 +2,7 @@ apiVersion: platform.nttdata.io/v1alpha1
 kind: AppModelA
 metadata:
   name: ${{ values.uniqueName }}
-  namespace: kratix-system
+  namespace: kratix-worker-system
   labels:
     app: ${{ values.uniqueName }}
     created-by: backstage

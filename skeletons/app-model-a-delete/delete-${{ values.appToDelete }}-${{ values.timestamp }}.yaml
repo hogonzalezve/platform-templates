@@ -9,7 +9,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: delete-{{ values.appToDelete }}-{{ values.timestamp }}
-  namespace: kratix-system
+  namespace: kratix-platform-system
   labels:
     kratix.io/deletion-request: "true"
     kratix.io/target-app: "{{ values.appToDelete }}"
@@ -40,7 +40,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: cleanup-{{ values.appToDelete }}-{{ values.timestamp }}
-  namespace: kratix-system
+  namespace: kratix-worker-system
   labels:
     kratix.io/cleanup-job: "true"
     kratix.io/target-app: "{{ values.appToDelete }}"
