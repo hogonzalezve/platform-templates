@@ -48,8 +48,6 @@ spec:
     enabled: ${{ values.databaseEnabled }}
 {%- if values.databaseEnabled %}
     type: "${{ values.databaseType }}"
-    claimApiVersion: "database.example.org/v1alpha1"
-    claimKind: "PostgreSQLInstance"
     claimName: "${{ values.uniqueName }}-db"
     parameters:
       engine: {% if values.databaseType == 'postgresql' %}"postgres"{% elif values.databaseType == 'mysql' %}"mysql"{% else %}"mongodb"{% endif %}
@@ -60,8 +58,6 @@ spec:
       publiclyAccessible: false
 {%- else %}
     type: "postgresql"
-    claimApiVersion: "database.example.org/v1alpha1"
-    claimKind: "PostgreSQLInstance"
     claimName: ""
     parameters:
       engine: "postgres"
